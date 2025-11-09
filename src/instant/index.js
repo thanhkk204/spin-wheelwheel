@@ -1,0 +1,1 @@
+export const backendURL = "https://prod.spline.design/8bRYYFB0DyWqpZvG/scene.splinecode";
