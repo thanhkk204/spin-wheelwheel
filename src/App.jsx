@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Wheel } from "react-custom-roulette"
 import { motion } from "framer-motion"
 import { Button } from "./components/ui/button"
@@ -6,38 +6,44 @@ import SplineScene from "./spline/SplineScene"
 import { backendURL } from "./instant"
 import { WheelDataSheet } from "./components/wheel-data-sheet"
 import CardButtonFeature from "./components/card-button-feature"
-import { ArrowRightLeft } from "lucide-react"
+import { ArrowRightLeft, Volume2 } from "lucide-react"
+import { speakChinese } from "./utils/speaker"
 const exampleData = [
   {
     option: "khán giả",
     pinyin: "guānzhòng",
     hanyu: "观众",
+    hidden: false,
   },
   {
     option: "quản lý",
     pinyin: "guǎnlǐ",
     hanyu: "管理",
+    hidden: false,
   },
   {
     option: "quảng cáo",
     pinyin: "guǎnggào",
     hanyu: "广告",
+    hidden: false,
   },
   {
     option: "quảng bá",
     pinyin: "guǎngbō",
     hanyu: "广播",
+    hidden: false,
   },
   {
     option: "đi dạo",
     pinyin: "guàng",
     hanyu: "逛",
+    hidden: false,
   },
 ]
 
 export default function SpinWheel() {
   const [data, setData] = useState(exampleData)
-  const [uploadedOriginalData, setUploadedOriginalData] = useState([])
+  const [originalData, setOriginalData] = useState([])
   const [results, setResults] = useState([])
   const [roundOneData, setRoundOneData] = useState([])
   const [roundTwoData, setRoundTwoData] = useState([])
@@ -49,7 +55,21 @@ export default function SpinWheel() {
   const [wheelKey, setWheelKey] = useState(0) // to reset wheel
 
   const handleSpinClick = () => {
-    const newPrizeNumber = Math.floor(Math.random() * data.length)
+    // Lọc ra các ô không bị ẩn
+    const visibleItems = data.filter((item) => !item.hidden)
+
+    // Nếu không còn ô nào hợp lệ thì dừng
+    if (visibleItems.length === 0) return
+
+    // Random trong danh sách không ẩn
+    const randomItem =
+      visibleItems[Math.floor(Math.random() * visibleItems.length)]
+
+    // Lấy index thật của item đó trong mảng gốc
+    const newPrizeNumber = data.findIndex(
+      (item) => item.option === randomItem.option
+    )
+
     setPrizeNumber(newPrizeNumber)
     setMustSpin(true)
     setResults([data[newPrizeNumber], ...results])
@@ -62,24 +82,20 @@ export default function SpinWheel() {
   }
 
   const handleUploadVocabularies = (uploadedData) => {
-    setUploadedOriginalData(uploadedData)
-
-    const newData = uploadedData.map((item) => ({
-      option: item["Tiếng việt"],
-      pinyin: item["Pinyin"],
-      hanyu: item["Tiếng trung"],
-    }))
+    const newData = uploadedData?.map((item) => {
+      const { "Tiếng việt": _, Pinyin: __, "Tiếng trung": ___, ...rest } = item
+      const modifiedData = {
+        option: item["Tiếng việt"],
+        pinyin: item["Pinyin"],
+        hanyu: item["Tiếng trung"],
+        ...rest,
+      }
+      setOriginalData(modifiedData)
+      return modifiedData
+    })
     setData(newData)
     setWheelKey(wheelKey + 1) // reset wheel
-  }
-  const handleDeletePrize = () => {
-    if (data.length < 2) return
-    const newData = data.filter((_, i) => i !== prizeNumber)
-    setData(newData)
-  }
-  const handleAddRoundTwo = () => {
-    setRoundTwoData([data[prizeNumber], ...roundTwoData])
-    handleDeletePrize()
+    setIsRoundTwo(false)
   }
   const handleChangeRoundTwo = () => {
     if (roundTwoData.length === 0) return
@@ -93,6 +109,55 @@ export default function SpinWheel() {
     setData(roundOneData)
     setWheelKey(wheelKey + 1)
   }
+  const handleDeletePrize = (currentPrizeIndex) => {
+    if (data.length < 2) return
+    const newData = data.filter((_, i) => i !== currentPrizeIndex)
+    setData(newData)
+  }
+  const handleHiddenPrize = (currentPrizeIndex) => {
+    const isCurrentHidden = data[currentPrizeIndex].hidden
+    setData(
+      data.map((_, index) =>
+        index === currentPrizeIndex
+          ? { ...data[index], hidden: isCurrentHidden ? false : true }
+          : data[index]
+      )
+    )
+  }
+  const handleAddRoundTwo = (currentPrizeIndex) => {
+    setRoundTwoData([data[currentPrizeIndex], ...roundTwoData])
+    handleDeletePrize(currentPrizeIndex)
+  }
+  const handleSpeakChinese = (row) => {
+    console.log({row})
+    row ? speakChinese(row.hanyu) :  speakChinese(data[prizeNumber].hanyu)
+  }
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Ngăn browser cuộn trang khi nhấn phím cách
+      if (e.code === "Space") {
+        e.preventDefault()
+        showPopup && handleSpeakChinese()
+      }
+      if (e.key.toLowerCase() === "v") {
+        e.preventDefault() // Ngăn chuyển focus phần tử
+       !showPopup && handleSpinClick()
+      }
+      if (e.code === "Enter") {
+        e.preventDefault() // Ngăn chuyển focus phần tử
+        showPopup && handleFlip()
+      }
+      if (e.key.toLowerCase() === "c") {
+        e.preventDefault() // Ngăn chuyển focus phần tử
+        console.log('c')
+        showPopup && handleClosePopup()
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [prizeNumber, flipped, showPopup])
+  console.log({flipped})
   return (
     <>
       {/* Background 3D */}
@@ -112,7 +177,19 @@ export default function SpinWheel() {
               key={wheelKey}
               mustStartSpinning={mustSpin}
               prizeNumber={prizeNumber}
-              data={data}
+              data={data.map((d) => {
+                const text = d.hidden
+                  ? d.option
+                      .split("")
+                      .map((c) => c + "\u0336") // chèn ký tự gạch ngang vào từng ký tự
+                      .join("")
+                  : d.option
+
+                return {
+                  ...d,
+                  option: text,
+                }
+              })}
               backgroundColors={["#ffb703", "#fb8500", "#8ecae6", "#219ebc"]}
               textColors={["#fff"]}
               spinDuration={0.2}
@@ -173,14 +250,18 @@ export default function SpinWheel() {
                 {/* <RainbowText /> */}
                 <h1 className="text-2xl mb-3 font-bold">🎉 Kết quả</h1>
               </div>
-              <p className="px-4 text-2xl flex items-center justify-center text-gray-600">
-                {data[prizeNumber]?.option}
-              </p>
+              <div className="px-4 text-2xl flex items-center justify-center gap-1 text-gray-600">
+                <p onClick={(e) => e.stopPropagation()} className="align-top">
+                  {data[prizeNumber]?.option}
+                </p>
+              </div>
               <CardButtonFeature
                 handleClosePopup={handleClosePopup}
                 handleAddRoundTwo={handleAddRoundTwo}
                 handleDeletePrize={handleDeletePrize}
+                handleHiddenPrize={handleHiddenPrize}
                 isRoundTwo={isRoundTwo}
+                prizeNumber={prizeNumber}
               />
             </div>
 
@@ -199,10 +280,22 @@ export default function SpinWheel() {
                 X
               </button>
 
-              <p className="px-4 border-b border-gray-300 w-full pb-2 text-start">
-                🎁 Mặt sau của phần thưởng!
-              </p>
-              <p className="px-4 text-gray-600 mt-2 mx-auto text-2xl">
+              <div className="px-4 border-b select-none border-gray-300 w-full pb-2 text-start flex items-center gap-4">
+                <p className="select-none">🎁 Mặt sau của phần thưởng!</p>
+                <Volume2
+                  onClick={(e) => {
+                    handleSpeakChinese()
+                    e.stopPropagation()
+                  }}
+                  className="w-6 h-6 transition-all hover:text-blue-300 ease-out text-gray-600"
+                />
+              </div>
+              <p
+                onClick={(e) => {
+                  e.stopPropagation()
+                }}
+                className="px-4 text-gray-600 mt-2 mx-auto text-2xl"
+              >
                 {data[prizeNumber]?.hanyu}{" "}
                 <span className="text-lg">({data[prizeNumber]?.pinyin})</span>
               </p>
@@ -211,6 +304,7 @@ export default function SpinWheel() {
                 handleAddRoundTwo={handleAddRoundTwo}
                 handleDeletePrize={handleDeletePrize}
                 isRoundTwo={isRoundTwo}
+                prizeNumber={prizeNumber}
               />
             </div>
           </motion.div>
@@ -219,9 +313,12 @@ export default function SpinWheel() {
       {/* Drawer for displaying data */}
       <WheelDataSheet
         handleUploadVocabularies={handleUploadVocabularies}
-        uploadedData={
-          uploadedOriginalData.length > 0 ? uploadedOriginalData : exampleData
-        }
+        handleHiddenPrize={handleHiddenPrize}
+        handleDeletePrize={handleDeletePrize}
+        handleAddRoundTwo={handleAddRoundTwo}
+        handleSpeakChinese={handleSpeakChinese}
+        data={data.length > 0 ? data : exampleData}
+        originalData={originalData.length > 0 ? originalData : exampleData}
         results={results}
         roundTwoData={roundTwoData}
       />

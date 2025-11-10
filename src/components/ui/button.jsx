@@ -11,17 +11,17 @@ const buttonVariants = cva(
       variant: {
         default: "bg-primary text-primary-foreground hover:bg-primary/90",
         destructive:
-          "bg-destructive text-white transition-all duration-300 hover:bg-destructive/90 hover:ring-1 hover:ring-destructive/40 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
+          "bg-destructive text-white transition-all duration-300 hover:bg-destructive/90 hover:ring-1 cursor-pointer hover:ring-destructive/40 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:
-          "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
+          "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 cursor-pointer",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80 cursor-pointer",
         success:
-          "bg-chart-2 text-white transition-all duration-300 shadow-sm hover:shadow-md hover:ring-1 hover:ring-chart-2/40",
+          "bg-chart-2 text-white transition-all duration-300 shadow-sm hover:shadow-md hover:ring-1 hover:ring-chart-2/40 cursor-pointer",
 
         ghost:
           "bg-transparent cursor-pointer",
-        link: "text-primary underline-offset-4 hover:underline",
+        link: "text-primary underline-offset-4 hover:underline cursor-pointer",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

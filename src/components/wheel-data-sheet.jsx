@@ -15,7 +15,17 @@ import { ArrowDownToLine, GamepadDirectional } from "lucide-react"
 import ExcelUpload from "./excel/upload"
 import { DataTab } from "./data-tab"
 
-export function WheelDataSheet({ handleUploadVocabularies, uploadedData, results, roundTwoData }) {
+export function WheelDataSheet({
+  handleUploadVocabularies,
+  data,
+  originalData,
+  results,
+  roundTwoData,
+  handleHiddenPrize,
+  handleDeletePrize,
+  handleAddRoundTwo,
+  handleSpeakChinese
+}) {
   const handleDownloadExcelFile = () => {
     const link = document.createElement("a")
     link.href = "/template.xlsx" // đường dẫn trong thư mục public
@@ -32,7 +42,7 @@ export function WheelDataSheet({ handleUploadVocabularies, uploadedData, results
           <GamepadDirectional />
         </Button>
       </SheetTrigger>
-      <SheetContent>
+      <SheetContent side="right" className="w-[500px]">
         <SheetHeader>
           <SheetTitle>Make It Reality</SheetTitle>
           <SheetDescription>
@@ -40,14 +50,25 @@ export function WheelDataSheet({ handleUploadVocabularies, uploadedData, results
           </SheetDescription>
         </SheetHeader>
         <div className="h-full overflow-y-auto overflow-x-hidden only-thumb">
-          <DataTab uploadedData={uploadedData} results={results} roundTwoData={roundTwoData} />
+          <DataTab
+            data={data}
+            originalData={originalData}
+            results={results}
+            roundTwoData={roundTwoData}
+            handleHiddenPrize={handleHiddenPrize}
+            handleDeletePrize={handleDeletePrize}
+            handleAddRoundTwo={handleAddRoundTwo}
+            handleSpeakChinese={handleSpeakChinese}
+          />
         </div>
         <SheetFooter>
           <div className="w-full flex items-center justify-center gap-5">
             <ExcelUpload handleUploadVocabularies={handleUploadVocabularies} />
             <Button
               variant={"ghost"}
-              className={"border border-chart-2 hover:text-red-400 transition-all duration-150 ease-out"}
+              className={
+                "border border-chart-2 hover:text-red-400 transition-all duration-150 ease-out"
+              }
               onClick={handleDownloadExcelFile}
             >
               <ArrowDownToLine />

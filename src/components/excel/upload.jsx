@@ -24,7 +24,11 @@ export default function ExcelUpload({ handleUploadVocabularies }) {
       const sheet = workbook.Sheets[sheetName]
       const jsonData = XLSX.utils.sheet_to_json(sheet, { defval: "" }) // convert thành JSON
       // setData(jsonData);
-      handleUploadVocabularies(jsonData)
+      const clearedOBject = jsonData.map(item => {
+        const { __EMPTY, ...cleanObj } = item
+        return {...cleanObj, hidden: false};
+      })
+      handleUploadVocabularies(clearedOBject)
     }
     reader.readAsBinaryString(file)
   }
