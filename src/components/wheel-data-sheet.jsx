@@ -24,7 +24,8 @@ export function WheelDataSheet({
   handleHiddenPrize,
   handleDeletePrize,
   handleAddRoundTwo,
-  handleSpeakChinese
+  handleSpeakChinese,
+  isRoundTwo
 }) {
   const handleDownloadExcelFile = () => {
     const link = document.createElement("a")
@@ -59,6 +60,7 @@ export function WheelDataSheet({
             handleDeletePrize={handleDeletePrize}
             handleAddRoundTwo={handleAddRoundTwo}
             handleSpeakChinese={handleSpeakChinese}
+            isRoundTwo={isRoundTwo}
           />
         </div>
         <SheetFooter>

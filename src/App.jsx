@@ -13,7 +13,7 @@ const exampleData = [
     option: "khán giả",
     pinyin: "guānzhòng",
     hanyu: "观众",
-    hidden: false,
+    hidden: true,
   },
   {
     option: "quản lý",
@@ -90,10 +90,12 @@ export default function SpinWheel() {
         hanyu: item["Tiếng trung"],
         ...rest,
       }
-      setOriginalData(modifiedData)
       return modifiedData
     })
+    setOriginalData(newData)
     setData(newData)
+    setRoundTwoData([]) // reset round two data
+    setResults([]) // reset results
     setWheelKey(wheelKey + 1) // reset wheel
     setIsRoundTwo(false)
   }
@@ -108,6 +110,8 @@ export default function SpinWheel() {
     setIsRoundTwo(false)
     setData(roundOneData)
     setWheelKey(wheelKey + 1)
+    // update roundTwo data into updated round two data
+    setRoundTwoData(data)
   }
   const handleDeletePrize = (currentPrizeIndex) => {
     if (data.length < 2) return
@@ -129,27 +133,28 @@ export default function SpinWheel() {
     handleDeletePrize(currentPrizeIndex)
   }
   const handleSpeakChinese = (row) => {
-    console.log({row})
-    row ? speakChinese(row.hanyu) :  speakChinese(data[prizeNumber].hanyu)
+    row ? speakChinese(row.hanyu) : speakChinese(data[prizeNumber].hanyu)
   }
   useEffect(() => {
     const handleKeyDown = (e) => {
+      // Nếu Ctrl, Alt, Meta (Command trên Mac) được nhấn thì bỏ qua
+      if (e.ctrlKey || e.altKey || e.metaKey) return
       // Ngăn browser cuộn trang khi nhấn phím cách
-      if (e.code === "Space") {
+      if (e.code === "Space" && showPopup) {
         e.preventDefault()
-        showPopup && handleSpeakChinese()
+        handleSpeakChinese()
       }
       if (e.key.toLowerCase() === "v") {
         e.preventDefault() // Ngăn chuyển focus phần tử
-       !showPopup && handleSpinClick()
+        !showPopup && handleSpinClick()
       }
-      if (e.code === "Enter") {
+      if (e.key.toLowerCase() === "x") {
         e.preventDefault() // Ngăn chuyển focus phần tử
         showPopup && handleFlip()
       }
       if (e.key.toLowerCase() === "c") {
         e.preventDefault() // Ngăn chuyển focus phần tử
-        console.log('c')
+        console.log("c")
         showPopup && handleClosePopup()
       }
     }
@@ -157,7 +162,6 @@ export default function SpinWheel() {
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [prizeNumber, flipped, showPopup])
-  console.log({flipped})
   return (
     <>
       {/* Background 3D */}
@@ -178,16 +182,24 @@ export default function SpinWheel() {
               mustStartSpinning={mustSpin}
               prizeNumber={prizeNumber}
               data={data.map((d) => {
-                const text = d.hidden
+                // gạch unicode (nếu wheel render bằng canvas / không nhận HTML)
+                const optionText = d.hidden
                   ? d.option
                       .split("")
-                      .map((c) => c + "\u0336") // chèn ký tự gạch ngang vào từng ký tự
+                      .map((c) => c + "\u0336")
                       .join("")
                   : d.option
 
+                // gán đúng vào property `style`
+                const itemStyle = {
+                  ...d.style,
+                  backgroundColor: d.hidden && "#444",
+                }
+
                 return {
                   ...d,
-                  option: text,
+                  option: optionText,
+                  style: itemStyle, // <-- quan trọng: phải ở đây
                 }
               })}
               backgroundColors={["#ffb703", "#fb8500", "#8ecae6", "#219ebc"]}
@@ -321,6 +333,7 @@ export default function SpinWheel() {
         originalData={originalData.length > 0 ? originalData : exampleData}
         results={results}
         roundTwoData={roundTwoData}
+        isRoundTwo={isRoundTwo}
       />
     </>
   )

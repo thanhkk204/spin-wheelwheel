@@ -29,6 +29,7 @@ export function DataTab({
   handleDeletePrize,
   handleAddRoundTwo,
   handleSpeakChinese,
+  isRoundTwo,
 }) {
   return (
     <div className="flex w-full flex-col gap-6">
@@ -56,6 +57,7 @@ export function DataTab({
             handleDeletePrize={handleDeletePrize}
             handleAddRoundTwo={handleAddRoundTwo}
             handleSpeakChinese={handleSpeakChinese}
+            isRoundTwo={isRoundTwo}
           />
         </TabsContent>
         <TabsContent value="result">
@@ -77,6 +79,7 @@ export function DataTab({
             data={originalData}
             type={"all"}
             handleHiddenPrize={handleHiddenPrize}
+            originalData={originalData}
             handleDeletePrize={handleDeletePrize}
             handleAddRoundTwo={handleAddRoundTwo}
             handleSpeakChinese={handleSpeakChinese}

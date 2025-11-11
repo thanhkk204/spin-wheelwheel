@@ -1,6 +1,8 @@
 import traslateKey from "@/utils/translate-title"
-import React from "react"
+import React, { useRef, useState } from "react"
 import { Button } from "./ui/button"
+import { Input } from "./ui/input"
+import SearchBox from "./inputs/customed-search-input"
 
 function DataTable({
   data,
@@ -8,10 +10,21 @@ function DataTable({
   handleDeletePrize,
   handleAddRoundTwo,
   handleSpeakChinese,
+  originalData,
   type,
+  isRoundTwo,
 }) {
+  const itemRefs = useRef([])
+
   return (
     <>
+      {originalData?.length > 0 && (
+        <SearchBox
+          data={originalData}
+          itemRefs={itemRefs}
+          key={originalData.length}
+        />
+      )}
       {data && data.length > 0 && (
         <table className="border-collapse border border-gray-400 w-full">
           <thead>
@@ -21,7 +34,7 @@ function DataTable({
                   {traslateKey(key) ? traslateKey(key) : key}
                 </th>
               ))}
-              {(type === "all" || type === "roundOne") && (
+              {(type === "roundOne") && (
                 <th className="border p-2 bg-gray-100">Chức năng</th>
               )}
             </tr>
@@ -30,8 +43,9 @@ function DataTable({
             {data.map((row, index) => (
               <tr
                 key={index}
+                ref={(el) => (itemRefs.current[index] = el)}
                 onClick={() => handleSpeakChinese(row)}
-                className="group cursor-pointer"
+                className="group cursor-pointer border"
               >
                 {Object.values(row).map((val, i) => (
                   <td
@@ -43,7 +57,7 @@ function DataTable({
                     {val === true ? "X" : val}
                   </td>
                 ))}
-                {(type === "all" || type === "roundOne") && (
+                {(type === "roundOne") && (
                   <td className="border p-2">
                     <div className="flex gap-2 justify-center items-center">
                       <Button
@@ -66,7 +80,7 @@ function DataTable({
                       >
                         Xóa
                       </Button>
-                      {(type === "roundOne" || type === "all") && (
+                      {type === "roundOne" && !isRoundTwo && (
                         <Button
                           variant="link"
                           className="p-0"

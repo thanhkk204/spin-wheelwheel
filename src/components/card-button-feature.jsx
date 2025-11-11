@@ -26,16 +26,6 @@ function CardButtonFeature({
         </Button>
       )}
       <Button
-        className={"cursor-pointer mx-1 bg-chart-4"}
-        onClick={(e) => {
-          handleClosePopup()
-          handleHiddenPrize(prizeNumber)
-          e.stopPropagation()
-        }}
-      >
-        Ẩn ô này
-      </Button>
-      <Button
         className={"cursor-pointer mx-1"}
         variant={"destructive"}
         onClick={(e) => {
@@ -45,6 +35,16 @@ function CardButtonFeature({
         }}
       >
         Xóa ô này
+      </Button>
+      <Button
+        className={"cursor-pointer mx-1 bg-chart-4"}
+        onClick={(e) => {
+          handleClosePopup()
+          handleHiddenPrize(prizeNumber)
+          e.stopPropagation()
+        }}
+      >
+        Ẩn ô này
       </Button>
       <Button
         className={"cursor-pointer mx-1"}
